@@ -21,6 +21,7 @@ cd energise-quickstart
 source environment.sh
 ./run.sh
 ```
+After running the `run.sh` script above, there should be two docker containers running: `energise-wavemq` and `energise-waved`.
 
 Setup a Python environment:
 
@@ -34,6 +35,73 @@ Currently the LPBC needs a running uPMU and SPBC in order to function.
 The uPMU is already publishing some dummy data and requires no additional setup, but you do need to get an SPBC working.
 
 
+## Creating Entities for SPBC + LPBC
+
+We need to create an XBOS entity for the SPBC and LPBC.
+
+```
+source environment.sh
+./create_lpbc.sh lpbctest
+./create_spbc.sh spbctest
+```
+
+`lpbctest` and `spbctest` above are the names of the LPBC and SPBC controller instances, respectively.
+These names are configured in the `cfg` dictionary found in the implementations of the LPBC and SPBC (`lpbc.py` and `spbc.py`, respectively). You do not need to change anything for using the `lpbctest` and `spbctest` names above, but keep in mind that deviating from those names will require changing the file's configuration.
+
+It is recommended that you eventually change these names. If we wanted to call the LPBC instance `lpbc-inverter-1` and the SPBC instance `spbc-static`, then we would do the following.
+
+Run this in the shell:
+
+```
+source environment.sh
+./create_lpbc.sh lpbc-inverter-1
+./create_spbc.sh spbc-static
+```
+
+In `lpbc.py`,
+
+```python
+# ... snip ...
+cfg = {
+        'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
+        'name': 'lpbc-inverter-1', # name of lpbc          <----- CHANGED
+        'spbc': 'spbc-static', # name of SPBC              <----- CHANGED
+        'upmu': 'L1', # name + other info for uPMU
+        'entity': 'lpbc-inverter-1.ent',                   <----- CHANGED
+        'wavemq': '172.17.0.1:9516',
+        'rate': 2, # number of seconds between calls to 'step'
+        }
+```
+
+In `spbc.py`
+
+```python
+# ... snip ...
+cfg = {
+    'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
+    'wavemq': '172.17.0.1:9516',
+    'name': 'spbc-static',          <----- CHANGED
+    'entity': 'spbc-static.ent',    <----- CHANGED
+}
+```
+
+## Running SPBC + LPBC
+
+Run these inside the Python virtualenv established above.
+
+LPBC:
+
+```
+. venv/bin/activate
+python lpbc.py
+```
+
+SPBC:
+
+```
+. venv/bin/activate
+python spbc.py
+```
 
 ### TODO:
 
@@ -188,7 +256,8 @@ class democontroller(pbc.LPBCProcess):
 
 cfg = {
         'namespace': "GyCetklhSNcgsCKVKXxSuCUZP4M80z9NRxU1pwfb2XwGhg==",
-        'name': 'lpbc1', # name of lpbc
+        'name': 'lpbctest', # name of lpbc
+        'spbc': 'spbctest', # name of SPBC
         'upmu': 'L1', # name + other info for uPMU
         'rate': 2, # number of seconds between calls to 'step'
         }
