@@ -76,7 +76,7 @@ cfg = {
         'name': 'lpbctest', # name of lpbc
         'spbc': 'spbctest', # name of SPBC
         'upmu': 'L1', # name + other info for uPMU
-        'entity': 'lpbc2.ent',
+        'entity': 'lpbctest.ent',
         'wavemq': '172.17.0.1:9516',
         'rate': 2, # number of seconds between calls to 'step'
         }

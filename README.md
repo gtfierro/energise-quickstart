@@ -7,7 +7,13 @@
 - Install (or make sure you have installed) docker
     - This is easier if you [add your user to the `docker` group to avoid using sudo](https://docs.docker.com/install/linux/linux-postinstall/)
 
-Run the following in the terminal to get the basic system services runninng
+This should be accomplished with the following (some dependencies required for building the `jq` dependency for the `pyxbos` package):
+
+```bash
+apt install docker.io python3-venv python3-dev autoconf automake build-essential libtool
+```
+
+Run the following in the terminal to get the basic XBOS services runninng
 
 ```bash
 git clone github.com/gtfierro/energise-quickstart
