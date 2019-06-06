@@ -67,7 +67,7 @@ cfg = {
         'name': 'lpbc-inverter-1', # name of lpbc          <----- CHANGED
         'spbc': 'spbc-static', # name of SPBC              <----- CHANGED
         'upmu': 'L1', # name + other info for uPMU
-        'entity': 'lpbc-inverter-1.ent',                   <----- CHANGED
+        'entity': 'lpbc-inverter-1.ent',          #        <----- CHANGED
         'wavemq': '172.17.0.1:9516',
         'rate': 2, # number of seconds between calls to 'step'
         }
@@ -80,8 +80,8 @@ In `spbc.py`
 cfg = {
     'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
     'wavemq': '172.17.0.1:9516',
-    'name': 'spbc-static',          <----- CHANGED
-    'entity': 'spbc-static.ent',    <----- CHANGED
+    'name': 'spbc-static',      #   <----- CHANGED
+    'entity': 'spbc-static.ent',#   <----- CHANGED
 }
 ```
 
