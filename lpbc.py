@@ -3,6 +3,7 @@ from pyxbos.drivers import pbc
 import logging
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 import random
+import pandas as pd
 
 class democontroller(pbc.LPBCProcess):
     """
@@ -14,6 +15,9 @@ class democontroller(pbc.LPBCProcess):
 
         # Create whatever instance variables + initialization you want here.
         # Pass options in using the 'cfg' dictionary
+
+        self.Pcmd = 0
+        self.Qcmd = 0
 
         self.measured_p = 1
         self.measured_q = 1
@@ -53,7 +57,13 @@ class democontroller(pbc.LPBCProcess):
             }
         """
 
-        print(c37_frame)
+        print('channels: ', [chan['channelName'] for chan in c37_frame['phasorChannels']])
+        c37_data = c37_frame['phasorChannels'][0]['data']
+        for reading in c37_data:
+            timestamp = pd.to_datetime(int(reading['time']), utc=True).tz_convert('US/Pacific')
+            angle = reading['angle']
+            magnitude = reading['magnitude']
+            print(f"Got angle {angle} magnitude {magnitude} at {timestamp}")
 
         # do measurements
         self.measured_p = random.randint(0,100)
@@ -78,7 +88,7 @@ cfg = {
         'upmu': 'L1', # name + other info for uPMU
         'entity': 'lpbctest.ent',
         'wavemq': '172.17.0.1:9516',
-        'rate': 2, # number of seconds between calls to 'step'
+        'rate': 1, # number of seconds between calls to 'step'
         }
 lpbc1 = democontroller(cfg)
 run_loop()

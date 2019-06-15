@@ -10,8 +10,8 @@ class myspbc(pbc.SPBCProcess):
         self.p = 10
         self.q = 20
 
-        # recalculate every 30 seconds
-        schedule(self.call_periodic(30, self.compute_and_announce))
+        # recalculate every 3 seconds
+        schedule(self.call_periodic(3, self.compute_and_announce))
 
     async def compute_and_announce(self):
         # do expensive compute to get new P and Q

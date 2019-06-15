@@ -28,7 +28,7 @@ Setup a Python environment:
 ```bash
 python3 -m venv venv # do once
 . venv/bin/activate # every time you want to run a script
-pip install pyxbos # do once
+pip install pyxbos pandas # do once
 ```
 
 Currently the LPBC needs a running uPMU and SPBC in order to function.
