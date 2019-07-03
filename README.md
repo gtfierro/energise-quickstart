@@ -5,7 +5,7 @@
 - Make sure you are on a Linux system (Ubuntu is nice)
 - Install (or make sure you have installed) Python3
 - Have WAVEMQ and WAVED running on the machine (see `LOCAL_SETUP.md` if you need this)
-- install packasges on ubuntu:
+- install packages on ubuntu:
     ```
     sudo apt install python3-venv python3-dev autoconf automake build-essential libtool
     ```
