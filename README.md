@@ -52,7 +52,7 @@ uPMUs publish each channel on a different WAVE "topic".
 Existing uPMUs:
 
 | name | channels |
-+------+----------+
+|------|----------|
 |`flexlab1` | `L1`,`L2`,`L3` |
 |`moustafa` | `L1`,`L2`,`L3` |
 
