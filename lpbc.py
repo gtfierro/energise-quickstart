@@ -130,9 +130,7 @@ class democontroller(pbc.LPBCProcess):
 
 cfg = {
         'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
-        'name': 'lpbctest', # name of lpbc
-        'spbc': 'spbctest', # name of SPBC
-        'local_channels': ['L1'],
+        'local_channels': ['moustafa/L1'],
         'reference_channels': ['flexlab1/L1'],
         'entity': 'lpbctest.ent',
         'wavemq': '127.0.0.1:4516',
