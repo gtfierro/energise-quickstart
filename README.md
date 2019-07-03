@@ -1,266 +1,310 @@
 # LPBC, SPBC Implementations for XBOS
 
-## Setup
+## System Requirements
 
 - Make sure you are on a Linux system (Ubuntu is nice)
 - Install (or make sure you have installed) Python3
-- Install (or make sure you have installed) docker
-    - This is easier if you [add your user to the `docker` group to avoid using sudo](https://docs.docker.com/install/linux/linux-postinstall/)
-
-This should be accomplished with the following (some dependencies required for building the `jq` dependency for the `pyxbos` package):
-
-```bash
-apt install docker.io python3-venv python3-dev autoconf automake build-essential libtool
-```
-
-Run the following in the terminal to get the basic XBOS services runninng
-
-```bash
-git clone github.com/gtfierro/energise-quickstart
-cd energise-quickstart
-source environment.sh
-./run.sh
-```
-After running the `run.sh` script above, there should be two docker containers running: `energise-wavemq` and `energise-waved`.
-
-Setup a Python environment:
-
-```bash
-python3 -m venv venv # do once
-. venv/bin/activate # every time you want to run a script
-pip install pyxbos pandas # do once
-```
-
-Currently the LPBC needs a running uPMU and SPBC in order to function.
-The uPMU is already publishing some dummy data and requires no additional setup, but you do need to get an SPBC working.
+- Have WAVEMQ and WAVED running on the machine (see `LOCAL_SETUP.md` if you need this)
+- install packasges on ubuntu:
+    ```
+    sudo apt install python3-venv python3-dev autoconf automake build-essential libtool
+    ```
 
 
-## Creating Entities for SPBC + LPBC
+## Python Requirements
 
-We need to create an XBOS entity for the SPBC and LPBC.
+- Python 3.6 or higher
+- python packages:
+    ```
+    pip install --user pyxbos pandas
+    ```
+
+## Configuration
+
+### SPBC and LPBC Names
+
+SPBCs, LPBCs and uPMUs all have names. Names can contain the following characters: `a-zA-Z0-9_-`
+
+LPBCs and SPBCs need to know the names (and channels) of the
+uPMUs they want to subscribe to in order to get phasor data. SPBCs need to know the names of the LPBCs
+they need to send targets to and receive status updates from.
+LPBCs need to know the name of the SPBC they are listening to for phasor targets.
+
+To create a new SPBC name, run the following script, replacing `<spbcname>` with the name of the SPBC
 
 ```
-source environment.sh
-./create_lpbc.sh lpbctest
-./create_spbc.sh spbctest
+./create_spbc.sh <spbcname>
 ```
 
-`lpbctest` and `spbctest` above are the names of the LPBC and SPBC controller instances, respectively.
-These names are configured in the `cfg` dictionary found in the implementations of the LPBC and SPBC (`lpbc.py` and `spbc.py`, respectively). You do not need to change anything for using the `lpbctest` and `spbctest` names above, but keep in mind that deviating from those names will require changing the file's configuration.
-
-It is recommended that you eventually change these names. If we wanted to call the LPBC instance `lpbc-inverter-1` and the SPBC instance `spbc-static`, then we would do the following.
-
-Run this in the shell:
+To create a new LPBC name, run the following script, replacing `<lpbcname>` with the name of the LPBC
 
 ```
-source environment.sh
-./create_lpbc.sh lpbc-inverter-1
-./create_spbc.sh spbc-static
+./create_lpbc.sh <lpbcname>
 ```
 
-In `lpbc.py`,
+The output of both of these scripts is a file called `<spbcname>.ent` or `<lpbcname>.ent` depending on which
+script you ran. This file is needed by an SPBC or LPBC program to connect to XBOS.
+
+### uPMUs
+
+uPMUs publish each channel on a different WAVE "topic".
+
+Existing uPMUs:
+
+| name | channels |
++------+----------+
+|`flexlab1` | `L1`,`L2`,`L3` |
+
+To subscribe to channel `L1`, you would use `flexlab1/L1`.
+
+## SPBC
+
+### Configuration
+
+The SPBC process takes as a configuration input a dictionary with the following keys:
+
+- `namespace`: do not change
+- `wavemq`: address of local wavemq agent
+- `name`: name of the SPBC controller. Naming each SPBC allows us to have multiple
+  parallel SPBCs in operation. LPBCs choose which SPBC they want to listen to by
+  specifying this name in their own configuration.
+- `entity`: the name of the local file constituting the 'identity' of this process.
+  The entity file is what gives this process the permission to interact with other
+  resources. File is created by `create_spbc.sh`
+- `reference_channels`: a list of URIs representing the phasor channels the SPBC
+  subscribes to as reference phasors
+
+**You can supply additional keys to the configuration dicationary; these are made available
+to the process in the `__init__` function**
+
+Example:
 
 ```python
-# ... snip ...
-cfg = {
-        'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
-        'name': 'lpbc-inverter-1', # name of lpbc          <----- CHANGED
-        'spbc': 'spbc-static', # name of SPBC              <----- CHANGED
-        'upmu': 'L1', # name + other info for uPMU
-        'entity': 'lpbc-inverter-1.ent',          #        <----- CHANGED
-        'wavemq': '172.17.0.1:9516',
-        'rate': 2, # number of seconds between calls to 'step'
-        }
-```
-
-In `spbc.py`
-
-```python
-# ... snip ...
 cfg = {
     'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
-    'wavemq': '172.17.0.1:9516',
-    'name': 'spbc-static',      #   <----- CHANGED
-    'entity': 'spbc-static.ent',#   <----- CHANGED
+    'wavemq': '127.0.0.1:4516',
+    'name': 'spbctest',
+    'entity': 'spbctest.ent',
+    'reference_channels': ['flexlab1/L1']
 }
+spbc_instance = myspbc(cfg)
+run_loop()
 ```
+### Execution
 
-## Running SPBC + LPBC
+Look at `spbc.py` for an example. The `compute_and_announce` function gets called every 3 seconds
+(this is configurable). This function analyzes the reference phasor information and lpbc status information
+and calls `self.broadcast_target` to send computed phasor targets to LPBCs.
 
-Run these inside the Python virtualenv established above.
+### Data
 
-LPBC:
+The SPBC has several data streams available to it as a result of its configuration.
 
-```
-. venv/bin/activate
-python lpbc.py
-```
+`self.reference_phasors`: contains the most recently received phasors from each of the reference
+phasor channels. This only contains the data from the most recently received phasor message,
+which *does not* consist of all the data since the SPBC `compute_and_announce` was last run
+The SPBC framework keeps the `self.reference_phasors` data up to date in the background.
 
-SPBC:
+`self.reference_phasors` is a dictionary keyed by the names of the phasor channels indicated
+in the `reference_channels` configuration option. For example, if the SPBC is configured
+with `reference_channels = ['flexlab1/L1','flexlab1/L2']`, then `self.reference_phasors` would
+contain the following structure:
 
-```
-. venv/bin/activate
-python spbc.py
-```
-
-### TODO:
-
-- [ ] document how to set up entities, etc
-
-## LPBC
-
-LPBC is passed a C37 data frame. This looks like the following Python/JSON object.
-
-The last item of the `data` array is the most recent uPMU reading.
-
-**This data is for a uPMU that is not measuring a real line; data makes no sense**
-
-```json
-{
-    "stationName": "ENERGIZE_1",
-    "idCode": 1,
-    "phasorChannels": [
+```python
+self.reference_phasors = {
+    'flexlab1/L1': [
         {
-            "channelName": "L1MagAng",
-            "unit": "Volt",
-            "data": [
-                {
-                    "time": "1559231114000000000",
-                    "angle": 196.5132440822694,
-                    "magnitude": 0.03969825804233551
-                },
-                {
-                    "time": "1559231114099999600",
-                    "angle": 188.9396298022358,
-                    "magnitude": 0.03955257683992386
-                },
-                {
-                    "time": "1559231114199999200",
-                    "angle": 195.676149757971,
-                    "magnitude": 0.042156800627708435
-                },
-                {
-                    "time": "1559231114299998800",
-                    "angle": 192.79764849453917,
-                    "magnitude": 0.03830688074231148
-                },
-                {
-                    "time": "1559231114399998400",
-                    "angle": 195.984969931104,
-                    "magnitude": 0.034339841455221176
-                },
-                {
-                    "time": "1559231114499998000",
-                    "angle": 194.05622013214077,
-                    "magnitude": 0.037918806076049805
-                },
-                {
-                    "time": "1559231114599997600",
-                    "angle": 193.4088138214719,
-                    "magnitude": 0.032730501145124435
-                },
-                {
-                    "time": "1559231114699997200",
-                    "angle": 195.04004058018938,
-                    "magnitude": 0.03850540146231651
-                },
-                {
-                    "time": "1559231114799996800",
-                    "angle": 193.30149788923268,
-                    "magnitude": 0.038565948605537415
-                },
-                {
-                    "time": "1559231114899996400",
-                    "angle": 195.50249902851263,
-                    "magnitude": 0.042079225182533264
-                }
-            ]
+            "time": "1559231114799996800",
+            "angle": 193.30149788923268,
+            "magnitude": 0.038565948605537415
+        },
+        {
+            "time": "1559231114899996400",
+            "angle": 195.50249902851263,
+            "magnitude": 0.042079225182533264
+        }
+        ... etc
+    ],
+    'flexlab/L2': [
+        {
+            "time": "1559231114799996800",
+            "angle": 220.30149788923268,
+            "magnitude": 10.038565948605537415
+        },
+        {
+            "time": "1559231114899996400",
+            "angle": 220.50249902851263,
+            "magnitude": 10.042079225182533264
         }
     ]
 }
 ```
 
+`self.lpbcs` contains the most recent LPBC statuses. By default, the SPBC subscribes to
+all LPBC instances it has permission to access. The SPBC framework subscribes to the
+LPBC statuses in the background and transparently updates the self.lpbcs structure.
+self.lpbcs is a dictionary keyed by the names of each LPBC:
+
 ```python
-from pyxbos.process import run_loop
-from pyxbos.drivers import pbc
-import logging
-logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
-import random
+self.lpbcs = {
+    'lpbc_1': {
+        # local time of LPBC
+        'time': 1559231114799996800,
+        # phasor errors of LPBC
+        'phasor_errors': {
+            'angle': 1.12132,
+            'magnitude': 31.12093090,
+            # ... and/or ...
+            'P': 1.12132,
+            'Q': 31.12093090,
+        },
+        # true if P is saturated
+        'p_saturated': True,
+        # true if Q is saturated
+        'q_saturated': True,
+        # if p_saturated is True, expect the p max value
+        'p_max': {'value': 1.4},
+        # if q_saturated is True, expect the q max value
+        'q_max': {'value': 11.4},
+    },
+    # etc...
+}
+```
 
-class democontroller(pbc.LPBCProcess):
-    """
-    To implement a LPBC, subclass pbc.LPBCProcess
-    and implement the step() method as documented below
-    """
-    def __init__(self, cfg):
-        super().__init__(cfg)
+## LPBC
 
-        # Create whatever instance variables + initialization you want here.
-        # Pass options in using the 'cfg' dictionary
+### Configuration
 
-        self.measured_p = 1
-        self.measured_q = 1
-        self.saturated = False
+The LPBC process takes as configuration input a dictionary with the following keys:
 
-    def step(self, c37_frame, p_target, q_target):
-        """
-        Step is called every 'rate' seconds with the most recent c37 frame from the upmu
-        and the latest P and Q targets given by the SPBC.
+- `namespace`: do not change
+- `wavemq`: address of local wavemq agent
+- `name`: name of the LPBC controller. **This needs to be unique**
+- `entity`: the name of the local file constituting the 'identity' of this process.
+  The entity file is what gives this process the permission to interact with other
+  resources. File is created by `create_lpbc.sh`
+- `spbc`: the name of the SPBC this LPBC is subscribed to for phasor targets
+- `local_channels`: a list of URIs representing the phasor channels the LPBC
+  subscribes to as the local measurement phasors
+- `reference_channels`: a list of URIs representing the phasor channels the LPBC
+  subscribes to as reference phasors
+- `rate`: how many seconds between executions of the LPBC (can be fractional, e.g. 0.5)
 
-        It runs its control loop to determine the actuation, performs it is 'self.control_on' is True
-        and returns the status
+**You can supply additional keys to the configuration dicationary; these are made available
+to the process in the `__init__` function**
 
-        C37 frame looks like
+Example:
 
-            {
-                "stationName": "ENERGIZE_1",
-                "idCode": 1,
-                "phasorChannels": [
-                    {
-                        "channelName": "L1MagAng",
-                        "unit": "Volt",
-                        "data": [
-                            {
-                                "time": "1559231114799996800",
-                                "angle": 193.30149788923268,
-                                "magnitude": 0.038565948605537415
-                            },
-                            {
-                                "time": "1559231114899996400",
-                                "angle": 195.50249902851263,
-                                "magnitude": 0.042079225182533264
-                            }
-                        ]
-                    }
-                ]
-            }
-        """
-
-        print(c37_frame)
-
-        # do measurements
-        self.measured_p = random.randint(0,100)
-        self.measured_q = random.randint(0,100)
-
-        p_diff = self.measured_p - p_target
-        q_diff = self.measured_q - q_target
-
-        print(f'controller called. P diff: {p_diff}, Q diff: {q_diff}')
-
-        if self.control_on:
-            print("DO CONTROL HERE")
-        
-
-        # return error message (default to empty string), p, q and boolean saturated value
-        return ("error message", self.measured_p, self.measured_q, self.saturated)
-
+```python
 cfg = {
-        'namespace': "GyCetklhSNcgsCKVKXxSuCUZP4M80z9NRxU1pwfb2XwGhg==",
+        'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
         'name': 'lpbctest', # name of lpbc
         'spbc': 'spbctest', # name of SPBC
-        'upmu': 'L1', # name + other info for uPMU
-        'rate': 2, # number of seconds between calls to 'step'
+        'local_channels': ['L1'],
+        'reference_channels': ['flexlab1/L1'],
+        'entity': 'lpbctest.ent',
+        'wavemq': '127.0.0.1:4516',
+        'rate': 1, # number of seconds between calls to 'step'
         }
 lpbc1 = democontroller(cfg)
 run_loop()
+```
+### Execution
+
+Look at `lpbc.py` for an example. The `step` function gets called every 1 second
+(this is configurable). This function analyzes the reference and local phasor information and current phasor targets and does whatever local control it wants.
+
+**TODO: need to get the API information for inverters, etc from LBL**
+
+It returns a status indicating the state of the LPBC
+
+```python
+status = {}
+status['phasor_errors'] = {
+        'V': 1.2,        #TODO: populate this with the error
+        'delta': 3.4,    #TODO: populate this with the error
+    }
+status['p_saturated'] = True, #TODO: set to True if saturated, false otherwise
+status['q_saturated'] = True, #TODO: set to True if saturated, false otherwise
+status['p_max'] = 10.4, #TODO: set to the value p saturated at; empty/None otherwise
+status['q_max'] = .51,  #TODO: set to the value q saturated at; empty/None otherwise
+
+return status
+```
+
+### Data
+
+The following data is supplied on every call to `step` in the LPBC:
+
+`local_phasors`: a list of lists of phasor data, corresponding to the
+`local_channels` given in the LPBC configuration. The phasor data will
+contain *all* phasor data received by the LPBC since the last time the
+`step` function was run. The outer list of local phasor channels is ordered
+the same as the `local_channels` configuration variable.
+
+If `local_channels=["L1","L2"]`, then `local_phasors` will look like
+
+```python
+[
+    # data for L1
+    [
+        {
+            "time": "1559231114799996800",
+            "angle": 193.30149788923268,
+            "magnitude": 0.038565948605537415
+        },
+        {
+            "time": "1559231114899996400",
+            "angle": 195.50249902851263,
+            "magnitude": 0.042079225182533264
+        }
+    ],
+    # data for L2
+    [
+        {
+            "time": "1559231114799996800",
+            "angle": 193.30149788923268,
+            "magnitude": 0.038565948605537415
+        },
+        {
+            "time": "1559231114899996400",
+            "angle": 195.50249902851263,
+            "magnitude": 0.042079225182533264
+        }
+    ],
+]
+```
+
+`reference_phasors`: a list of lists of phasor data, corresponding to the
+`reference_channels` given in the LPBC configuration. The phasor data will
+contain *all* phasor data received by the LPBC since the last time the
+`step` function was run. The outer list of reference phasor channels is ordered
+the same as the `reference_channels` configuration variable.
+
+
+
+`phasor_target`: is the most recently received phasor target given by the SPBC.
+The phasor target key is an array of the targets for each phase.
+It is structured as follows:
+
+```python
+{
+    'time': "1559231114799996800", # SPBC time in nanoseconds
+    'phasor_targets': [
+        {
+            'nodeID': <lpbc name>,
+            'channelName': 'L1',
+            'angle': 196.123,
+            'magnitude': 10.2,
+            'kvbase': {'value': 10},
+        },
+        {
+            'nodeID': <lpbc name>,
+            'channelName': 'L2',
+            'angle': 196.123,
+            'magnitude': 10.2,
+            'kvbase': {'value': 10},
+        },
+    ]
+}
 ```

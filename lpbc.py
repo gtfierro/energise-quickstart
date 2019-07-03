@@ -9,19 +9,26 @@ class democontroller(pbc.LPBCProcess):
     """
     To implement a LPBC, subclass pbc.LPBCProcess
     and implement the step() method as documented below
+
+    Configuration:
+    - `namespace`: do not change
+    - `wavemq`: address of local wavemq agent
+    - `name`: name of the LPBC controller. **This needs to be unique**
+    - `entity`: the name of the local file constituting the 'identity' of this process.
+      The entity file is what gives this process the permission to interact with other
+      resources. File is created by `create_lpbc.sh`
+    - `spbc`: the name of the SPBC this LPBC is subscribed to for phasor targets
+    - `local_channels`: a list of URIs representing the phasor channels the LPBC
+      subscribes to as the local measurement phasors
+    - `reference_channels`: a list of URIs representing the phasor channels the LPBC
+      subscribes to as reference phasors
+    - `rate`: how many seconds between executions of the LPBC (can be fractional, e.g. 0.5)
     """
     def __init__(self, cfg):
         super().__init__(cfg)
 
         # Create whatever instance variables + initialization you want here.
         # Pass options in using the 'cfg' dictionary
-
-        self.Pcmd = 0
-        self.Qcmd = 0
-
-        self.measured_p = 1
-        self.measured_q = 1
-        self.saturated = False
 
     def step(self, local_phasors, reference_phasors, phasor_target):
         """

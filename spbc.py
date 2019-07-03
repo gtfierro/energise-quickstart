@@ -92,6 +92,9 @@ class myspbc(pbc.SPBCProcess):
     def __init__(self, cfg):
         super().__init__(cfg)
 
+        # Create whatever instance variables + initialization you want here.
+        # Pass options in using the 'cfg' dictionary
+
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
