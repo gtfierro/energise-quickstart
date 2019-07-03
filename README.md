@@ -201,7 +201,7 @@ cfg = {
         'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
         'name': 'lpbctest', # name of lpbc
         'spbc': 'spbctest', # name of SPBC
-        'local_channels': ['L1'],
+        'local_channels': ['moustafa/L1'],
         'reference_channels': ['flexlab1/L1'],
         'entity': 'lpbctest.ent',
         'wavemq': '127.0.0.1:4516',
@@ -225,10 +225,10 @@ status['phasor_errors'] = {
         'V': 1.2,        #TODO: populate this with the error
         'delta': 3.4,    #TODO: populate this with the error
     }
-status['p_saturated'] = True, #TODO: set to True if saturated, false otherwise
-status['q_saturated'] = True, #TODO: set to True if saturated, false otherwise
-status['p_max'] = 10.4, #TODO: set to the value p saturated at; empty/None otherwise
-status['q_max'] = .51,  #TODO: set to the value q saturated at; empty/None otherwise
+status['p_saturated'] = True  #TODO: set to True if saturated, false otherwise
+status['q_saturated'] = True  #TODO: set to True if saturated, false otherwise
+status['p_max'] = 10.4  #TODO: set to the value p saturated at; empty/None otherwise
+status['q_max'] = .51   #TODO: set to the value q saturated at; empty/None otherwise
 
 return status
 ```
@@ -243,11 +243,11 @@ contain *all* phasor data received by the LPBC since the last time the
 `step` function was run. The outer list of local phasor channels is ordered
 the same as the `local_channels` configuration variable.
 
-If `local_channels=["L1","L2"]`, then `local_phasors` will look like
+If `local_channels=["moustafa/L1","moustafa/L2"]`, then `local_phasors` will look like
 
 ```python
 [
-    # data for L1
+    # data for moustafa/L1
     [
         {
             "time": "1559231114799996800",
@@ -260,7 +260,7 @@ If `local_channels=["L1","L2"]`, then `local_phasors` will look like
             "magnitude": 0.042079225182533264
         }
     ],
-    # data for L2
+    # data for moustafa/L2
     [
         {
             "time": "1559231114799996800",
@@ -294,14 +294,14 @@ It is structured as follows:
     'phasor_targets': [
         {
             'nodeID': <lpbc name>,
-            'channelName': 'L1',
+            'channelName': 'moustafa/L1',
             'angle': 196.123,
             'magnitude': 10.2,
             'kvbase': {'value': 10},
         },
         {
             'nodeID': <lpbc name>,
-            'channelName': 'L2',
+            'channelName': 'moustafa/L2',
             'angle': 196.123,
             'magnitude': 10.2,
             'kvbase': {'value': 10},
