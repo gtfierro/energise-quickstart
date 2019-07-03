@@ -104,10 +104,9 @@ class democontroller(pbc.LPBCProcess):
         """
 
         for idx, local_channel in enumerate(self.local_channels):
-            print(f"Received {len(local_phasors[idx])} for channel {local_channel}")
+            print(f"Local channel: Received {len(local_phasors[idx])} for channel {local_channel}")
         for idx, reference_channel in enumerate(self.reference_channels):
-            print(f"Received {len(reference_phasors[idx])} for channel {reference_channel}")
-        print(f"Got target {phasor_target}")
+            print(f"Reference channel: Received {len(reference_phasors[idx])} for channel {reference_channel}")
 
         # how to iterate through the phasor data
         for idx, local_channel in enumerate(self.local_channels):
@@ -115,17 +114,17 @@ class democontroller(pbc.LPBCProcess):
                 timestamp = pd.to_datetime(int(reading['time']), utc=True).tz_convert('US/Pacific')
                 angle = reading['angle']
                 magnitude = reading['magnitude']
-                print(f"Got angle {angle} magnitude {magnitude} at {timestamp}")
+                #print(f"Got angle {angle} magnitude {magnitude} at {timestamp}")
 
         status = {}
         status['phasor_errors'] = {
                 'V': 1.2,        #TODO: populate this with the error
                 'delta': 3.4,    #TODO: populate this with the error
             }
-        status['p_saturated'] = True, #TODO: set to True if saturated, false otherwise
-        status['q_saturated'] = True, #TODO: set to True if saturated, false otherwise
-        status['p_max'] = 10.4, #TODO: set to the value p saturated at; empty/None otherwise
-        status['q_max'] = .51,  #TODO: set to the value q saturated at; empty/None otherwise
+        status['p_saturated'] = True #TODO: set to True if saturated, false otherwise
+        status['q_saturated'] = True #TODO: set to True if saturated, false otherwise
+        status['p_max'] = 10.4 #TODO: set to the value p saturated at; empty/None otherwise
+        status['q_max'] = .51  #TODO: set to the value q saturated at; empty/None otherwise
 
         return status
 
@@ -137,7 +136,7 @@ cfg = {
         'reference_channels': ['flexlab1/L1'],
         'entity': 'lpbctest.ent',
         'wavemq': '127.0.0.1:4516',
-        'rate': 1, # number of seconds between calls to 'step'
+        'rate': 2, # number of seconds between calls to 'step'
         }
 lpbc1 = democontroller(cfg)
 run_loop()
