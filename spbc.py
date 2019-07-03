@@ -92,10 +92,6 @@ class myspbc(pbc.SPBCProcess):
     def __init__(self, cfg):
         super().__init__(cfg)
 
-        # initial values of V and delta
-        self.v = 10
-        self.delta = 20
-
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
