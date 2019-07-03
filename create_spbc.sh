@@ -1,11 +1,19 @@
 #!/bin/bash
 
+# GRANT pub,sub on energise/spbc/{spbcname}/*
+# GRANT sub on energise/lpbc/*
+# GRANT sub on energise/upmu/*
+
+
 if [ -z "$1" ]; then
     echo "Provide SPBC name (no spaces)"
     exit 1
 fi
 
+source environment.sh
 source lib.sh
+
+make_user_entity
 
 spbcname=$1
 SPBC_ENTITY="${spbcname}.ent"
@@ -15,10 +23,10 @@ $echo "${INFO}Granting permissions${NC}"
 # create dots
 
 # publish as SPBC
-echo "\n" | wv rtprove --subject $SPBC_ENTITY -o test.pem "wavemq:publish,subscribe@${ENERGISE_NAMESPACE}/spbc/${spbcname}"
+echo "\n" | wv rtprove --subject $SPBC_ENTITY -o test.pem "wavemq:publish,subscribe@${ENERGISE_NAMESPACE}/spbc/${spbcname}/*"
 if [[ $? != 0 ]]; then
-    echo "\n" | wv rtgrant --attester $ENERGISE_USER_ENTITY --subject $SPBC_ENTITY -e 3y --indirections 0 "wavemq:publish,subscribe@${ENERGISE_NAMESPACE}/spbc/${spbcname}"
-    echo "\n" | wv rtprove --subject $SPBC_ENTITY -o test.pem "wavemq:publish,subscribe@${ENERGISE_NAMESPACE}/spbc/${spbcname}"
+    echo "\n" | wv rtgrant --attester $ENERGISE_USER_ENTITY --subject $SPBC_ENTITY -e 3y --indirections 0 "wavemq:publish,subscribe@${ENERGISE_NAMESPACE}/spbc/${spbcname}/*"
+    echo "\n" | wv rtprove --subject $SPBC_ENTITY -o test.pem "wavemq:publish,subscribe@${ENERGISE_NAMESPACE}/spbc/${spbcname}/*"
     wv verify test.pem
 else
     wv verify test.pem

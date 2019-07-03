@@ -1,16 +1,22 @@
 #!/bin/bash
 
+# GRANT pub,sub energise/lpbc/{lpbcname}/*
+# GRANT sub energise/spbc/*
+# GRANT sub energise/upmu/*
+
 if [ -z "$1" ]; then
     echo "Provide LPBC name (no spaces)"
     exit 1
 fi
 
+source environment.sh
 source lib.sh
+
+make_user_entity
 
 lpbcname=$1
 LPBC_ENTITY="${lpbcname}.ent"
 create_entity "${lpbc_name}" $LPBC_ENTITY
-$echo "${INFO}Granting permissions${NC}"
 
 # create dots
 

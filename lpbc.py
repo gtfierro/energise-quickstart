@@ -9,6 +9,20 @@ class democontroller(pbc.LPBCProcess):
     """
     To implement a LPBC, subclass pbc.LPBCProcess
     and implement the step() method as documented below
+
+    Configuration:
+    - `namespace`: do not change
+    - `wavemq`: address of local wavemq agent
+    - `name`: name of the LPBC controller. **This needs to be unique**
+    - `entity`: the name of the local file constituting the 'identity' of this process.
+      The entity file is what gives this process the permission to interact with other
+      resources. File is created by `create_lpbc.sh`
+    - `spbc`: the name of the SPBC this LPBC is subscribed to for phasor targets
+    - `local_channels`: a list of URIs representing the phasor channels the LPBC
+      subscribes to as the local measurement phasors
+    - `reference_channels`: a list of URIs representing the phasor channels the LPBC
+      subscribes to as reference phasors
+    - `rate`: how many seconds between executions of the LPBC (can be fractional, e.g. 0.5)
     """
     def __init__(self, cfg):
         super().__init__(cfg)
@@ -16,79 +30,111 @@ class democontroller(pbc.LPBCProcess):
         # Create whatever instance variables + initialization you want here.
         # Pass options in using the 'cfg' dictionary
 
-        self.Pcmd = 0
-        self.Qcmd = 0
-
-        self.measured_p = 1
-        self.measured_q = 1
-        self.saturated = False
-
-    def step(self, c37_frame, p_target, q_target):
+    def step(self, local_phasors, reference_phasors, phasor_target):
         """
-        Step is called every 'rate' seconds with the most recent c37 frame from the upmu
-        and the latest P and Q targets given by the SPBC.
+        Step is called every 'rate' seconds with the following data:
+        - local_phasors: a list of lists of phasor data, corresponding to the
+          'local_channels' given in the LPBC configuration. The phasor data will
+          contain *all* phasor data received by the LPBC since the last time the
+          'step' function was run. The outer list of local phasor channels is ordered
+          the same as the 'local_channels' configuration variable.
 
-        It runs its control loop to determine the actuation, performs it is 'self.control_on' is True
-        and returns the status
+          If 'local_channels=["L1","L2"]', then 'local_phasors' will look like
 
-        C37 frame looks like
+            [
+                # data for L1
+                [
+                    {
+                        "time": "1559231114799996800",
+                        "angle": 193.30149788923268,
+                        "magnitude": 0.038565948605537415
+                    },
+                    {
+                        "time": "1559231114899996400",
+                        "angle": 195.50249902851263,
+                        "magnitude": 0.042079225182533264
+                    }
+                ],
+                # data for L2
+                [
+                    {
+                        "time": "1559231114799996800",
+                        "angle": 193.30149788923268,
+                        "magnitude": 0.038565948605537415
+                    },
+                    {
+                        "time": "1559231114899996400",
+                        "angle": 195.50249902851263,
+                        "magnitude": 0.042079225182533264
+                    }
+                ],
+            ]
+
+        - reference_phasors: a list of lists of phasor data, corresponding to the
+          'reference_channels' given in the LPBC configuration. The phasor data will
+          contain *all* phasor data received by the LPBC since the last time the
+          'step' function was run. The outer list of reference phasor channels is ordered
+          the same as the 'reference_channels' configuration variable.
+
+          The structure of the 'reference_phasors' is the same structure as 'local_phasors' above.
+
+        - phasor_target: is the most recently received phasor target given by the SPBC.
+          The phasor target key is an array of the targets for each phase.
+          It is structured as follows:
 
             {
-                "stationName": "ENERGIZE_1",
-                "idCode": 1,
-                "phasorChannels": [
+                'time': "1559231114799996800", # SPBC time in nanoseconds
+                'phasor_targets': [
                     {
-                        "channelName": "L1MagAng",
-                        "unit": "Volt",
-                        "data": [
-                            {
-                                "time": "1559231114799996800",
-                                "angle": 193.30149788923268,
-                                "magnitude": 0.038565948605537415
-                            },
-                            {
-                                "time": "1559231114899996400",
-                                "angle": 195.50249902851263,
-                                "magnitude": 0.042079225182533264
-                            }
-                        ]
-                    }
+                        'nodeID': <lpbc name>,
+                        'channelName': 'L1',
+                        'angle': 196.123,
+                        'magnitude': 10.2,
+                        'kvbase': {'value': 10},
+                    },
+                    {
+                        'nodeID': <lpbc name>,
+                        'channelName': 'L2',
+                        'angle': 196.123,
+                        'magnitude': 10.2,
+                        'kvbase': {'value': 10},
+                    },
                 ]
             }
         """
 
-        print('channels: ', [chan['channelName'] for chan in c37_frame['phasorChannels']])
-        c37_data = c37_frame['phasorChannels'][0]['data']
-        for reading in c37_data:
-            timestamp = pd.to_datetime(int(reading['time']), utc=True).tz_convert('US/Pacific')
-            angle = reading['angle']
-            magnitude = reading['magnitude']
-            print(f"Got angle {angle} magnitude {magnitude} at {timestamp}")
+        for idx, local_channel in enumerate(self.local_channels):
+            print(f"Local channel: Received {len(local_phasors[idx])} for channel {local_channel}")
+        for idx, reference_channel in enumerate(self.reference_channels):
+            print(f"Reference channel: Received {len(reference_phasors[idx])} for channel {reference_channel}")
 
-        # do measurements
-        self.measured_p = random.randint(0,100)
-        self.measured_q = random.randint(0,100)
+        # how to iterate through the phasor data
+        for idx, local_channel in enumerate(self.local_channels):
+            for reading in local_phasors[idx]:
+                timestamp = pd.to_datetime(int(reading['time']), utc=True).tz_convert('US/Pacific')
+                angle = reading['angle']
+                magnitude = reading['magnitude']
+                #print(f"Got angle {angle} magnitude {magnitude} at {timestamp}")
 
-        p_diff = self.measured_p - p_target
-        q_diff = self.measured_q - q_target
+        status = {}
+        status['phasor_errors'] = {
+                'V': 1.2,        #TODO: populate this with the error
+                'delta': 3.4,    #TODO: populate this with the error
+            }
+        status['p_saturated'] = True #TODO: set to True if saturated, false otherwise
+        status['q_saturated'] = True #TODO: set to True if saturated, false otherwise
+        status['p_max'] = 10.4 #TODO: set to the value p saturated at; empty/None otherwise
+        status['q_max'] = .51  #TODO: set to the value q saturated at; empty/None otherwise
 
-        print(f'controller called. P diff: {p_diff}, Q diff: {q_diff}')
-
-        if self.control_on:
-            print("DO CONTROL HERE")
-        
-
-        # return error message (default to empty string), p, q and boolean saturated value
-        return ("error message", self.measured_p, self.measured_q, self.saturated)
+        return status
 
 cfg = {
         'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
-        'name': 'lpbctest', # name of lpbc
-        'spbc': 'spbctest', # name of SPBC
-        'upmu': 'L1', # name + other info for uPMU
+        'local_channels': ['moustafa/L1'],
+        'reference_channels': ['flexlab1/L1'],
         'entity': 'lpbctest.ent',
-        'wavemq': '172.17.0.1:9516',
-        'rate': 1, # number of seconds between calls to 'step'
+        'wavemq': '127.0.0.1:4516',
+        'rate': 2, # number of seconds between calls to 'step'
         }
 lpbc1 = democontroller(cfg)
 run_loop()
