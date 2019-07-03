@@ -106,6 +106,10 @@ class myspbc(pbc.SPBCProcess):
         for lpbc, status in self.lpbcs.items():
             print('LPBC status:', lpbc,':', status)
 
+        # how to loop through all reference phasor channels
+        for channel, data in self.reference_phasors.items():
+            print(f"Channel {channel} has {len(data) if data else 0} points")
+
         # you could do expensive compute to get new targets here.
         # This oculd produce some intermediate structure like so:
 
