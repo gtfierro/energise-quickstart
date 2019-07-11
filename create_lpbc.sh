@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# GRANT pub,sub energise/lpbc/{lpbcname}/*
+# GRANT pub,sub energise/lpbc/{lpbc_name}/*
 # GRANT sub energise/spbc/*
 # GRANT sub energise/upmu/*
 
@@ -14,8 +14,8 @@ source lib.sh
 
 make_user_entity
 
-lpbcname=$1
-LPBC_ENTITY="${lpbcname}.ent"
+lpbc_name=$1
+LPBC_ENTITY="${lpbc_name}.ent"
 create_entity "${lpbc_name}" $LPBC_ENTITY
 
 # create dots
