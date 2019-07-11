@@ -135,6 +135,8 @@ cfg = {
         'entity': 'lpbctest.ent',
         'wavemq': '127.0.0.1:4516',
         'rate': 2, # number of seconds between calls to 'step'
+        'name': 'lpbctest',
+        'spbc': 'spbctest'
         }
 lpbc1 = democontroller(cfg)
 run_loop()
