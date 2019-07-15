@@ -103,8 +103,9 @@ class myspbc(pbc.SPBCProcess):
     async def compute_and_announce(self):
 
         # how to loop through all LPBC statuses
-        for lpbc, status in self.lpbcs.items():
-            print('LPBC status:', lpbc,':', status)
+        for lpbc, channels in self.lpbcs.items():
+            for channel, status in channels.items():
+                print('LPBC status:', lpbc,':', channel, ':', status)
 
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():

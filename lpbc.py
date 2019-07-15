@@ -126,8 +126,8 @@ class democontroller(pbc.LPBCProcess):
             }
         status['p_saturated'] = [True,False] #TODO: set to True if saturated, false otherwise
         status['q_saturated'] = [True,False] #TODO: set to True if saturated, false otherwise
-        status['p_max'] = [10.4, 108] #TODO: set to the value p saturated at; empty/None otherwise
-        status['q_max'] = [.51, 4.1] #TODO: set to the value q saturated at; empty/None otherwise
+        status['p_max'] = [10.4, None] #TODO: set to the value p saturated at; empty/None otherwise
+        status['q_max'] = [.51, None] #TODO: set to the value q saturated at; empty/None otherwise
 
         return status
 
