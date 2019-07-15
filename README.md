@@ -217,18 +217,21 @@ Look at `lpbc.py` for an example. The `step` function gets called every 1 second
 
 **TODO: need to get the API information for inverters, etc from LBL**
 
-It returns a status indicating the state of the LPBC
+It returns a status indicating the state of the LPBC.
+The `phases` key in the `status` dictionary tells the framework which index corresponds to which phase.
+It is expected that each key appears in the `status` dictionary, and that each value is a list of the appropriate length: if there are 2 phases, then each value (`V`, `delta`,`p_saturated`,`q_saturated`, `p_max`, `q_max`) should be a list of length 2.
 
 ```python
 status = {}
+status['phases'] = ['L1','L2']
 status['phasor_errors'] = {
-        'V': 1.2,        #TODO: populate this with the error
-        'delta': 3.4,    #TODO: populate this with the error
+        'V': [1.2,2.3],        #TODO: populate this with the error
+        'delta': [3.4,0.1],    #TODO: populate this with the error
     }
-status['p_saturated'] = True  #TODO: set to True if saturated, false otherwise
-status['q_saturated'] = True  #TODO: set to True if saturated, false otherwise
-status['p_max'] = 10.4  #TODO: set to the value p saturated at; empty/None otherwise
-status['q_max'] = .51   #TODO: set to the value q saturated at; empty/None otherwise
+status['p_saturated'] = [True,False] #TODO: set to True if saturated, false otherwise
+status['q_saturated'] = [True,False] #TODO: set to True if saturated, false otherwise
+status['p_max'] = [10.4, 108] #TODO: set to the value p saturated at; empty/None otherwise
+status['q_max'] = [.51, 4.1] #TODO: set to the value q saturated at; empty/None otherwise
 
 return status
 ```
