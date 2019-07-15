@@ -53,7 +53,7 @@ Existing uPMUs:
 
 | name | channels |
 |------|----------|
-|`flexlab1` | `L1`,`L2`,`L3` |
+|`flexlab1` | `L1`,`L2`,`L3` , `A1`, `A2`, `A3`|
 |`moustafa` | `L1`,`L2`,`L3` |
 
 To subscribe to channel `L1` on the first uPMU, you would use `flexlab1/L1`.
