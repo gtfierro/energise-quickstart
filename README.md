@@ -141,32 +141,37 @@ self.reference_phasors = {
 }
 ```
 
-`self.lpbcs` contains the most recent LPBC statuses. By default, the SPBC subscribes to
-all LPBC instances it has permission to access. The SPBC framework subscribes to the
+`self.lpbcs`: contains the most recent LPBC statuses. By default, the SPBC subscribes to
+LPBC instances it has permission to access. The SPBC framework subscribes to the
 LPBC statuses in the background and transparently updates the self.lpbcs structure.
-self.lpbcs is a dictionary keyed by the names of each LPBC:
+self.lpbcs is a dictionary keyed by the names of each LPBC. Each value is another dictionary
+for that LPBC node, keyed by the channels for the LPBC (e.g. L1)
 
 ```python
 self.lpbcs = {
+    # node name
     'lpbc_1': {
-        # local time of LPBC
-        'time': 1559231114799996800,
-        # phasor errors of LPBC
-        'phasor_errors': {
-            'angle': 1.12132,
-            'magnitude': 31.12093090,
-            # ... and/or ...
-            'P': 1.12132,
-            'Q': 31.12093090,
+        # phase names
+        'L1': {
+            # local time of LPBC
+            'time': 1559231114799996800,
+            # phasor errors of LPBC
+            'phasor_errors': {
+                'angle': 1.12132,
+                'magnitude': 31.12093090,
+                # ... and/or ...
+                'P': 1.12132,
+                'Q': 31.12093090,
+            },
+            # true if P is saturated
+            'pSaturated': True,
+            # true if Q is saturated
+            'qSaturated': True,
+            # if p_saturated is True, expect the p max value
+            'pMax': 1.4,
+            # if q_saturated is True, expect the q max value
+            'qMax': 11.4,
         },
-        # true if P is saturated
-        'p_saturated': True,
-        # true if Q is saturated
-        'q_saturated': True,
-        # if p_saturated is True, expect the p max value
-        'p_max': {'value': 1.4},
-        # if q_saturated is True, expect the q max value
-        'q_max': {'value': 11.4},
     },
     # etc...
 }
@@ -217,18 +222,21 @@ Look at `lpbc.py` for an example. The `step` function gets called every 1 second
 
 **TODO: need to get the API information for inverters, etc from LBL**
 
-It returns a status indicating the state of the LPBC
+It returns a status indicating the state of the LPBC.
+The `phases` key in the `status` dictionary tells the framework which index corresponds to which phase.
+It is expected that each key appears in the `status` dictionary, and that each value is a list of the appropriate length: if there are 2 phases, then each value (`V`, `delta`,`p_saturated`,`q_saturated`, `p_max`, `q_max`) should be a list of length 2.
 
 ```python
 status = {}
+status['phases'] = ['L1','L2']
 status['phasor_errors'] = {
-        'V': 1.2,        #TODO: populate this with the error
-        'delta': 3.4,    #TODO: populate this with the error
+        'V': [1.2,2.3],        #TODO: populate this with the error
+        'delta': [3.4,0.1],    #TODO: populate this with the error
     }
-status['p_saturated'] = True  #TODO: set to True if saturated, false otherwise
-status['q_saturated'] = True  #TODO: set to True if saturated, false otherwise
-status['p_max'] = 10.4  #TODO: set to the value p saturated at; empty/None otherwise
-status['q_max'] = .51   #TODO: set to the value q saturated at; empty/None otherwise
+status['p_saturated'] = [True,False] #TODO: set to True if saturated, false otherwise
+status['q_saturated'] = [True,False] #TODO: set to True if saturated, false otherwise
+status['p_max'] = [10.4, None] #TODO: set to the value p saturated at; empty/None otherwise
+status['q_max'] = [.51, None] #TODO: set to the value q saturated at; empty/None otherwise
 
 return status
 ```
