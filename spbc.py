@@ -63,28 +63,33 @@ class myspbc(pbc.SPBCProcess):
     - self.lpbcs: contains the most recent LPBC statuses. By default, the SPBC subscribes to
       all LPBC instances it has permission to access. The SPBC framework subscribes to the
       LPBC statuses in the background and transparently updates the self.lpbcs structure.
-      self.lpbcs is a dictionary keyed by the names of each LPBC:
+      self.lpbcs is a dictionary keyed by the names of each LPBC. Each value is another dictionary
+      for that LPBC node, keyed by the channels for the LPBC (e.g. L1)
 
         self.lpbcs = {
+            # node name
             'lpbc_1': {
-                # local time of LPBC
-                'time': 1559231114799996800,
-                # phasor errors of LPBC
-                'phasor_errors': {
-                    'angle': 1.12132,
-                    'magnitude': 31.12093090,
-                    # ... and/or ...
-                    'P': 1.12132,
-                    'Q': 31.12093090,
+                # phase names
+                'L1': {
+                    # local time of LPBC
+                    'time': 1559231114799996800,
+                    # phasor errors of LPBC
+                    'phasor_errors': {
+                        'angle': 1.12132,
+                        'magnitude': 31.12093090,
+                        # ... and/or ...
+                        'P': 1.12132,
+                        'Q': 31.12093090,
+                    },
+                    # true if P is saturated
+                    'pSaturated': True,
+                    # true if Q is saturated
+                    'qSaturated': True,
+                    # if p_saturated is True, expect the p max value
+                    'pMax': 1.4,
+                    # if q_saturated is True, expect the q max value
+                    'qMax': 11.4,
                 },
-                # true if P is saturated
-                'p_saturated': True,
-                # true if Q is saturated
-                'q_saturated': True,
-                # if p_saturated is True, expect the p max value
-                'p_max': {'value': 1.4},
-                # if q_saturated is True, expect the q max value
-                'q_max': {'value': 11.4},
             },
             # etc...
         }
