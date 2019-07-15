@@ -107,6 +107,7 @@ class democontroller(pbc.LPBCProcess):
             print(f"Local channel: Received {len(local_phasors[idx])} for channel {local_channel}")
         for idx, reference_channel in enumerate(self.reference_channels):
             print(f"Reference channel: Received {len(reference_phasors[idx])} for channel {reference_channel}")
+        print(f"Got phasor targets {phasor_target}")
 
         # how to iterate through the phasor data
         for idx, local_channel in enumerate(self.local_channels):
@@ -117,20 +118,22 @@ class democontroller(pbc.LPBCProcess):
                 #print(f"Got angle {angle} magnitude {magnitude} at {timestamp}")
 
         status = {}
+        # 'phases' tells us which index maps to which phase
+        status['phases'] = ['L1','L2']
         status['phasor_errors'] = {
-                'V': 1.2,        #TODO: populate this with the error
-                'delta': 3.4,    #TODO: populate this with the error
+                'V': [1.2,2.3],        #TODO: populate this with the error
+                'delta': [3.4,0.1],    #TODO: populate this with the error
             }
-        status['p_saturated'] = True #TODO: set to True if saturated, false otherwise
-        status['q_saturated'] = True #TODO: set to True if saturated, false otherwise
-        status['p_max'] = 10.4 #TODO: set to the value p saturated at; empty/None otherwise
-        status['q_max'] = .51  #TODO: set to the value q saturated at; empty/None otherwise
+        status['p_saturated'] = [True,False] #TODO: set to True if saturated, false otherwise
+        status['q_saturated'] = [True,False] #TODO: set to True if saturated, false otherwise
+        status['p_max'] = [10.4, 108] #TODO: set to the value p saturated at; empty/None otherwise
+        status['q_max'] = [.51, 4.1] #TODO: set to the value q saturated at; empty/None otherwise
 
         return status
 
 cfg = {
         'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
-        'local_channels': ['moustafa/L1'],
+        'local_channels': ['flexlab1/L2'],
         'reference_channels': ['flexlab1/L1'],
         'entity': 'lpbctest.ent',
         'wavemq': '127.0.0.1:4516',

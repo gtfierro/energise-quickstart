@@ -123,7 +123,7 @@ class myspbc(pbc.SPBCProcess):
                 'delta': [.8, .9, .7],
                 'kvbase': None,
             },
-            'lpbc_2': {
+            'lpbctest': {
                 'channels': ['L2'],
                 'V': [1.0],
                 'delta': [.8],
