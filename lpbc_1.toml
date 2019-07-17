@@ -1,0 +1,8 @@
+namespace = "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ=="
+local_channels = ['flexlab1/L2','flexlab1/A2']
+reference_channels = ['flexlab1/L1','flexlab1/A1']
+entity = 'lpbctest.ent'
+wavemq = '127.0.0.1:4516'
+rate = 2  # number of seconds between calls to 'step'
+name = 'lpbctest' # node ID
+spbc = 'spbctest'

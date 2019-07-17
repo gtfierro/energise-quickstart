@@ -62,7 +62,7 @@ To subscribe to channel `L1` on the first uPMU, you would use `flexlab1/L1`.
 
 ### Configuration
 
-The SPBC process takes as a configuration input a dictionary with the following keys:
+The SPBC process takes as a configuration input a filename with the following keys:
 
 - `namespace`: do not change
 - `wavemq`: address of local wavemq agent
@@ -80,17 +80,21 @@ to the process in the `__init__` function**
 
 Example:
 
-```python
-cfg = {
-    'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
-    'wavemq': '127.0.0.1:4516',
-    'name': 'spbctest',
-    'entity': 'spbctest.ent',
-    'reference_channels': ['flexlab1/L1']
-}
-spbc_instance = myspbc(cfg)
-run_loop()
+```toml
+# spbc_1.toml
+namespace = "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ=="
+wavemq = '127.0.0.1:4516'
+name = 'spbctest'
+entity = 'spbctest.ent'
+reference_channels = ['flexlab1/L1']
 ```
+
+The SPBC expects a configuration file as an argument when it is invoked:
+
+```bash
+$ python3 spbc.py spbc_1.toml
+```
+
 ### Execution
 
 Look at `spbc.py` for an example. The `compute_and_announce` function gets called every 3 seconds
@@ -181,7 +185,7 @@ self.lpbcs = {
 
 ### Configuration
 
-The LPBC process takes as configuration input a dictionary with the following keys:
+The LPBC process takes as configuration input a file with the following keys
 
 - `namespace`: do not change
 - `wavemq`: address of local wavemq agent
@@ -201,20 +205,25 @@ to the process in the `__init__` function**
 
 Example:
 
-```python
-cfg = {
-        'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
-        'name': 'lpbctest', # name of lpbc
-        'spbc': 'spbctest', # name of SPBC
-        'local_channels': ['moustafa/L1'],
-        'reference_channels': ['flexlab1/L1'],
-        'entity': 'lpbctest.ent',
-        'wavemq': '127.0.0.1:4516',
-        'rate': 1, # number of seconds between calls to 'step'
-        }
-lpbc1 = democontroller(cfg)
-run_loop()
+```toml
+# lpbc_1.toml
+
+namespace = "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ=="
+name = 'lpbctest', # name of lpbc
+spbc = 'spbctest', # name of SPBC
+local_channels = ['moustafa/L1']
+reference_channels = ['flexlab1/L1']
+entity = 'lpbctest.ent'
+wavemq = '127.0.0.1:4516'
+rate = 1 # number of seconds between calls to 'step'
 ```
+
+The LPBC expects a configuration file as an argument when it is invoked:
+
+```bash
+$ python3 lpbc.py lpbc_1.toml
+```
+
 ### Execution
 
 Look at `lpbc.py` for an example. The `step` function gets called every 1 second

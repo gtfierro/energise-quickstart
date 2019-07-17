@@ -1,6 +1,7 @@
-from pyxbos.process import run_loop, schedule
+from pyxbos.process import run_loop, schedule, config_from_file
 from pyxbos.drivers import pbc
 import logging
+import sys
 import random
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
@@ -142,12 +143,9 @@ class myspbc(pbc.SPBCProcess):
             await self.broadcast_target(lpbc_name, targets['channels'], \
                             targets['V'], targets['delta'], targets['kvbase'])
 
-cfg = {
-    'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
-    'wavemq': '127.0.0.1:4516',
-    'name': 'spbctest',
-    'entity': 'spbctest.ent',
-    'reference_channels': ['flexlab1/L1','flexlab1/L2']
-}
+if len(sys.argv) > 1:
+    cfg = config_from_file(sys.argv[1])
+else:
+    sys.exit("Must supply config file as argument: python3 spbc.py <config file.toml>")
 spbc_instance = myspbc(cfg)
 run_loop()
