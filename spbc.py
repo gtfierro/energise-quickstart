@@ -129,19 +129,21 @@ class myspbc(pbc.SPBCProcess):
                 'V': [1.0,2.0,3.0],
                 'delta': [.8, .9, .7],
                 'kvbase': None,
+                'kvabase': None,
             },
             'lpbctest': {
                 'channels': ['L2'],
                 'V': [1.0],
                 'delta': [.8],
                 'kvbase': [1],
+                'kvabase': [1],
             }
         }
 
         # loop through the computed targets and send them to all LPBCs:
         for lpbc_name, targets in computed_targets.items():
             await self.broadcast_target(lpbc_name, targets['channels'], \
-                            targets['V'], targets['delta'], targets['kvbase'])
+                            targets['V'], targets['delta'], kvbases=targets['kvbase'], kvabases=targets['kvabase'])
 
 if len(sys.argv) > 1:
     cfg = config_from_file(sys.argv[1])

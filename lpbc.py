@@ -92,13 +92,13 @@ class democontroller(pbc.LPBCProcess):
                         'angle': 196.123,
                         'magnitude': 10.2,
                         'kvbase': {'value': 10},
+                        'kvabase': {'value': 10},
                     },
                     {
                         'nodeID': <lpbc name>,
                         'channelName': 'L2',
                         'angle': 196.123,
                         'magnitude': 10.2,
-                        'kvbase': {'value': 10},
                     },
                 ]
             }
