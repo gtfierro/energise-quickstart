@@ -53,10 +53,12 @@ Existing uPMUs:
 
 | name | channels |
 |------|----------|
-|`flexlab1` | `L1`,`L2`,`L3` , `A1`, `A2`, `A3`|
-|`moustafa` | `L1`,`L2`,`L3` |
+|`uPMU_0` | `L1`,`L2`,`L3`|
+|`uPMU_123P` | `L1`,`L2`,`L3`|
+|`uPMU_123` | `L1`,`L2`,`L3`, `A1`, `A2`, `A3`|
+|`uPMU_4` | `L1`,`L2`,`L3`|
 
-To subscribe to channel `L1` on the first uPMU, you would use `flexlab1/L1`.
+To subscribe to channel `L1` on the first uPMU, you would use `uPMU_0/L1`.
 
 ## SPBC
 
