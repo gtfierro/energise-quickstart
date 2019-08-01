@@ -53,12 +53,14 @@ Existing uPMUs:
 
 | name | channels |
 |------|----------|
-|`uPMU_0` | `L1`,`L2`,`L3`|
-|`uPMU_123P` | `L1`,`L2`,`L3`|
-|`uPMU_123` | `L1`,`L2`,`L3`, `A1`, `A2`, `A3`|
-|`uPMU_4` | `L1`,`L2`,`L3`|
+|`uPMU_0` | `L1`,`L2`,`L3`, `C1`, `C2`, `C3`|
+|`uPMU_123P` | `L1`,`L2`,`L3`, `C1`, `C2`, `C3`|
+|`uPMU_123` | `L1`,`L2`,`L3`, `C1`, `C2`, `C3`|
+|`uPMU_4` | `L1`,`L2`,`L3`, `C1`, `C2`, `C3`|
 
 To subscribe to channel `L1` on the first uPMU, you would use `uPMU_0/L1`.
+
+`LX` channels are volt; `CX` channels are amp
 
 ## SPBC
 
