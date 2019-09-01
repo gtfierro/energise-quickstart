@@ -1,4 +1,4 @@
-from pyxbos.process import run_loop, config_from_file
+from pyxbos.process import run_loop, config_from_file, schedule
 from pyxbos.drivers import pbc
 import logging
 import sys
@@ -117,6 +117,17 @@ class democontroller(pbc.LPBCProcess):
                 angle = reading['angle']
                 magnitude = reading['magnitude']
                 #print(f"Got angle {angle} magnitude {magnitude} at {timestamp}")
+
+        self.log_actuation({
+            'phases': ['a'],
+            'P_cmd': [1.],
+            'Q_cmd': [2.],
+            'P_act': [3.],
+            'Q_act': [4.],
+            'P_PV': [5.],
+            'Batt_cmd': [6.],
+            'pf_ctrl': [7.],
+        })
 
         status = {}
         # 'phases' tells us which index maps to which phase
