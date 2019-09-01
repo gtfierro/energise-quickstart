@@ -90,7 +90,7 @@ namespace = "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ=="
 wavemq = '127.0.0.1:4516'
 name = 'spbctest'
 entity = 'spbctest.ent'
-reference_channels = ['flexlab1/L1']
+reference_channels = ['uPMU_123P/L1']
 ```
 
 The SPBC expects a configuration file as an argument when it is invoked:
@@ -116,12 +116,12 @@ The SPBC framework keeps the `self.reference_phasors` data up to date in the bac
 
 `self.reference_phasors` is a dictionary keyed by the names of the phasor channels indicated
 in the `reference_channels` configuration option. For example, if the SPBC is configured
-with `reference_channels = ['flexlab1/L1','flexlab1/L2']`, then `self.reference_phasors` would
+with `reference_channels = ['uPMU_123P/L1','uPMU_123P/L2']`, then `self.reference_phasors` would
 contain the following structure:
 
 ```python
 self.reference_phasors = {
-    'flexlab1/L1': [
+    'uPMU_123P/L1': [
         {
             "time": "1559231114799996800",
             "angle": 193.30149788923268,
@@ -215,8 +215,8 @@ Example:
 namespace = "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ=="
 name = 'lpbctest' # node ID for the LPBC
 spbc = 'spbctest' # name of SPBC
-local_channels = ['moustafa/L1']
-reference_channels = ['flexlab1/L1']
+local_channels = ['uPMU_0/L1']
+reference_channels = ['uPMU_123P/L1']
 entity = 'lpbctest.ent'
 wavemq = '127.0.0.1:4516'
 rate = 1 # number of seconds between calls to 'step'
@@ -254,6 +254,24 @@ status['q_max'] = [.51, None] #TODO: set to the value q saturated at; empty/None
 return status
 ```
 
+Within the `step` function, it is likely that you are sending actuation commands to external resources such as inverters. In order to save the actuation commands, you can use the `self.log_actuation` function provided by the PBC framework:
+
+```python
+# inside the step() function
+self.log_actuation({
+    "phases": ["a","b","c"],
+    "P_cmd": [10.1, 20.2, 30.3],
+    "Q_cmd": [10.9, 20.9, 30.9],
+    "P_act": [.1, .2, .3],
+    "Q_act": [.1, .2, .3],
+    "P_PV": [11.1,22.2,33.3],
+    "Batt_cmd": [99.1, 99.2, 99.3],
+    "pf_ctrl": [8.7,6.5,5.4]
+})
+```
+
+The argument to `log_actuation` is a Python dictionary with the above keys. Each value is a list of floats whose values should line up with the phases under the `phases` key.
+
 ### Data
 
 The following data is supplied on every call to `step` in the LPBC:
@@ -264,11 +282,11 @@ contain *all* phasor data received by the LPBC since the last time the
 `step` function was run. The outer list of local phasor channels is ordered
 the same as the `local_channels` configuration variable.
 
-If `local_channels=["moustafa/L1","moustafa/L2"]`, then `local_phasors` will look like
+If `local_channels=["uPMU_0/L1","uPMU_0/L2"]`, then `local_phasors` will look like
 
 ```python
 [
-    # data for moustafa/L1
+    # data for uPMU_0/L1
     [
         {
             "time": "1559231114799996800",
@@ -281,7 +299,7 @@ If `local_channels=["moustafa/L1","moustafa/L2"]`, then `local_phasors` will loo
             "magnitude": 0.042079225182533264
         }
     ],
-    # data for moustafa/L2
+    # data for uPMU_0/L2
     [
         {
             "time": "1559231114799996800",
@@ -315,14 +333,14 @@ It is structured as follows:
     'phasor_targets': [
         {
             'nodeID': <lpbc name>,
-            'channelName': 'moustafa/L1',
+            'channelName': 'uPMU_0/L1',
             'angle': 196.123,
             'magnitude': 10.2,
             'kvbase': {'value': 10},
         },
         {
             'nodeID': <lpbc name>,
-            'channelName': 'moustafa/L2',
+            'channelName': 'uPMU_0/L2',
             'angle': 196.123,
             'magnitude': 10.2,
             'kvbase': {'value': 10},
